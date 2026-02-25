@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Avião</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    .aviao-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 30px;
+        margin-top: 30px;
+    }
+    #multiplicador {
+        font-size: 5rem;
+        font-weight: bold;
+        color: #ffd700;
+        text-shadow: 0 0 10px rgba(255,215,0,0.5);
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    .btn-parar {
+        font-size: 1.5rem;
+        padding: 15px 40px;
+    }
+    .regras {
+        background: rgba(255,255,255,0.1);
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 20px;
+    }
+    .status-jogo {
+        font-size: 1.5rem;
+        margin-top: 20px;
+        padding: 15px;
+        background: rgba(0,0,0,0.3);
+        border-radius: 10px;
+        font-weight: bold;
+    }
+    .ganhou {
+        color: #00ff00;
+        background: rgba(0,255,0,0.1);
+    }
+    .perdeu {
+        color: #ff4444;
+        background: rgba(255,0,0,0.1);
+        animation: tremer 0.2s;
+    }
+    @keyframes tremer {
+        0%,100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
+    }
+    .caindo {
+        color: #ff4444;
+        animation: tremer 0.1s infinite;
+    }
+    .alert-success {
+        background-color: rgba(0,255,0,0.2);
+        color: #00ff00;
+        border: 1px solid #00ff00;
+    }
+    .alert-danger {
+        background-color: rgba(255,0,0,0.2);
+        color: #ff4444;
+        border: 1px solid #ff4444;
+    }
+</style>
+</head>
+
+<body class="bg-dark text-light text-center">
+
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="container">
+    <div class="aviao-container">
+        <h1 class="mb-4">✈ Avião</h1>
+        
+        <!-- Mensagens de erro/sucesso -->
+        <div th:if="${erro}" class="alert alert-danger" role="alert">
+            <span th:text="${erro}"></span>
+        </div>
+        
+        <div th:if="${resultado}" class="alert" role="alert" 
+             th:classappend="${#strings.contains(resultado, 'ganhou') ? 'alert-success' : 'alert-danger'}">
+            <span th:text="${resultado}"></span>
+        </div>
+        
+        <!-- Saldo atual (escondido para o JavaScript) -->
+        <input type="hidden" id="saldoAtual" th:value="${usuario.saldo}">
+        
+        <h2 id="multiplicador">1.0x</h2>
+        
+        <div class="status-jogo" id="statusJogo" 
+             th:classappend="${resultado != null ? (#strings.contains(resultado, 'ganhou') ? 'ganhou' : 'perdeu') : ''}">
+            <span th:if="${resultado == null}">⏸ Pronto para decolar!</span>
+            <span th:if="${resultado != null}" th:text="${#strings.contains(resultado, 'ganhou') ? '🎉 VOCÊ GANHOU! 🎉' : '💥 VOCÊ PERDEU! 💥'}"></span>
+        </div>
+        
+        <form id="jogoForm" th:action="@{/aviao/jogar}" method="post" onsubmit="return prepararEnvio()">
+            <input type="hidden" name="retirada" id="retirada" value="1.0">
+            <input type="hidden" name="valor" id="valorHidden">
+            
+            <div class="row justify-content-center">
+                <div class="col-md-4">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text bg-warning text-dark">R$</span>
+                        <input type="number" step="0.01" min="0.01" 
+                               id="valorInput" 
+                               placeholder="Valor da aposta" 
+                               class="form-control form-control-lg text-center" 
+                               th:value="${valor != null ? valor : ''}" 
+                               th:disabled="${resultado != null}">
+                    </div>
+                    
+                    <!-- Botão Iniciar (mostra quando não há resultado) -->
+                    <button type="button" onclick="iniciar()" id="btnIniciar" 
+                            class="btn btn-warning btn-lg w-100 mb-3"
+                            th:if="${resultado == null}">
+                        ✈ Decolar
+                    </button>
+                    
+                    <!-- Botão Parar (mostra durante o jogo) -->
+                    <button type="submit" id="btnParar" class="btn btn-success btn-lg w-100 btn-parar mb-3" style="display: none;">
+                        💰 Parar e Retirar (R$ <span id="valorRetirada">0.00</span>)
+                    </button>
+                    
+                    <!-- Botão Jogar de Novo (mostra quando há resultado) -->
+                    <a href="/aviao" id="btnJogarNovo" class="btn btn-primary btn-lg w-100 mb-3" 
+                       th:if="${resultado != null}">
+                        🔄 Jogar de Novo
+                    </a>
+                    
+                    <!-- Botão Voltar para Home -->
+                    <a href="/" class="btn btn-secondary btn-lg w-100">
+                        🏠 Voltar para Home
+                    </a>
+                </div>
+            </div>
+        </form>
+        
+        <div class="mt-4 text-warning">
+            <p>💰 Multiplicador atual: <span id="multiAtual">1.0</span>x</p>
+            <p>💵 Potencial ganho: R$ <span id="potencial">0.00</span></p>
+            <p>💸 Saldo após jogada: R$ <span id="saldoAtualizado" th:text="${usuario.saldo}">0.00</span></p>
+        </div>
+        
+        <div class="regras text-start text-light">
+            <h5>📋 Regras do Jogo:</h5>
+            <ul>
+                <li>O avião decola com multiplicador 1.0x</li>
+                <li>A cada 0.3 segundos, o multiplicador aumenta 0.1x</li>
+                <li>Clique em "Parar" para retirar seu prêmio</li>
+                <li>Se o avião cair, você perde a aposta</li>
+                <li>Quanto mais tempo esperar, maior o prêmio, maior o risco!</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+<script>
+let saldoUsuario = parseFloat(document.getElementById("saldoAtual").value);
+let multi = 1.0;
+let intervalo;
+let ativo = false;
+let valorAposta = 0;
+
+// Função para atualizar saldo na interface
+function atualizarSaldoInterface() {
+    fetch("/saldo")
+        .then(res => res.json())
+        .then(data => {
+            saldoUsuario = data;
+            document.getElementById("saldoAtualizado").innerText = data.toFixed(2);
+            // Atualiza também o navbar se possível
+            let saldoNavbar = document.getElementById("saldo");
+            if (saldoNavbar) {
+                saldoNavbar.innerText = data.toFixed(2);
+            }
+        })
+        .catch(err => console.log("Erro ao atualizar saldo:", err));
+}
+
+// Atualiza saldo a cada 2 segundos
+setInterval(atualizarSaldoInterface, 2000);
+
+function iniciar() {
+    valorAposta = parseFloat(document.getElementById("valorInput").value);
+    
+    if (!valorAposta || valorAposta <= 0) {
+        alert("Digite um valor válido para apostar!");
+        return;
+    }
+    
+    // Verifica saldo atual
+    fetch("/saldo")
+        .then(res => res.json())
+        .then(data => {
+            saldoUsuario = data;
+            
+            if (valorAposta > saldoUsuario) {
+                alert("❌ Saldo insuficiente! Seu saldo é R$ " + saldoUsuario.toFixed(2));
+                return;
+            }
+            
+            iniciarJogo();
+        })
+        .catch(err => {
+            console.log("Erro ao verificar saldo:", err);
+            if (valorAposta > saldoUsuario) {
+                alert("❌ Saldo insuficiente! Seu saldo é R$ " + saldoUsuario.toFixed(2));
+                return;
+            }
+            iniciarJogo();
+        });
+}
+
+function iniciarJogo() {
+    ativo = true;
+    multi = 1.0;
+    
+    // Atualiza interface
+    document.getElementById("multiplicador").innerText = multi.toFixed(2) + "x";
+    document.getElementById("multiAtual").innerText = multi.toFixed(2);
+    document.getElementById("potencial").innerText = (valorAposta * multi).toFixed(2);
+    document.getElementById("valorRetirada").innerText = (valorAposta * multi).toFixed(2);
+    document.getElementById("statusJogo").innerHTML = "✈ Avião voando... Multiplicador: " + multi.toFixed(2) + "x";
+    document.getElementById("statusJogo").className = "status-jogo";
+    
+    // Esconde/mostra botões
+    document.getElementById("btnIniciar").style.display = "none";
+    document.getElementById("btnParar").style.display = "block";
+    document.getElementById("valorInput").disabled = true;
+    
+    // Salva valor no atributo data
+    document.getElementById("valorHidden").value = valorAposta;
+    
+    intervalo = setInterval(() => {
+        if (!ativo) return;
+        
+        multi = Math.round((multi + 0.1) * 10) / 10;
+        
+        // Atualiza interface
+        document.getElementById("multiplicador").innerText = multi.toFixed(2) + "x";
+        document.getElementById("multiAtual").innerText = multi.toFixed(2);
+        document.getElementById("potencial").innerText = (valorAposta * multi).toFixed(2);
+        document.getElementById("valorRetirada").innerText = (valorAposta * multi).toFixed(2);
+        document.getElementById("statusJogo").innerHTML = "✈ Avião voando... Multiplicador: " + multi.toFixed(2) + "x";
+        
+        // Chance de quebrar aumenta com o tempo
+        let chanceQuebrar = 0.02 + (multi * 0.01);
+        if (Math.random() < chanceQuebrar) {
+            clearInterval(intervalo);
+            ativo = false;
+            
+            // Configura para envio com retirada = 0 (avião caiu)
+            document.getElementById("retirada").value = "0";
+            document.getElementById("valorHidden").value = valorAposta;
+            
+            // Mostra mensagem de queda
+            document.getElementById("statusJogo").innerHTML = "💥 O AVIÃO CAIU! 💥";
+            document.getElementById("statusJogo").className = "status-jogo perdeu caindo";
+            document.getElementById("multiplicador").style.color = "#ff4444";
+            
+            // Envia o formulário após 1 segundo para dar tempo de ver a mensagem
+            setTimeout(() => {
+                document.getElementById("jogoForm").submit();
+            }, 1000);
+        }
+    }, 300);
+}
+
+function prepararEnvio() {
+    if (!ativo) {
+        alert("Inicie o jogo primeiro!");
+        return false;
+    }
+    
+    clearInterval(intervalo);
+    ativo = false;
+    
+    // Configura os valores para envio
+    document.getElementById("retirada").value = multi.toFixed(1);
+    document.getElementById("valorHidden").value = valorAposta;
+    document.getElementById("statusJogo").innerHTML = "✅ Você retirou em " + multi.toFixed(1) + "x!";
+    document.getElementById("statusJogo").className = "status-jogo ganhou";
+    
+    return true;
+}
+
+// Quando a página carrega
+window.onload = function() {
+    // Se tem resultado, atualiza saldo e mostra mensagem apropriada
+    if (document.querySelector(".alert")) {
+        document.getElementById("valorInput").disabled = true;
+        
+        // Atualiza saldo imediatamente
+        atualizarSaldoInterface();
+        
+        // Se perdeu, garante que a cor está vermelha
+        if (document.querySelector(".alert-danger")) {
+            document.getElementById("statusJogo").className = "status-jogo perdeu";
+        } else if (document.querySelector(".alert-success")) {
+            document.getElementById("statusJogo").className = "status-jogo ganhou";
+        }
+    }
+}
+
+// Atualiza potencial quando muda o valor
+document.getElementById("valorInput").addEventListener("input", function() {
+    if (!ativo) {
+        let val = parseFloat(this.value) || 0;
+        document.getElementById("potencial").innerText = (val * multi).toFixed(2);
+    }
+});
+
+// Atualiza saldo a cada 1 segundo durante o jogo
+setInterval(() => {
+    if (ativo) {
+        atualizarSaldoInterface();
+    }
+}, 1000);
+</script>
+
+</body>
+</html>

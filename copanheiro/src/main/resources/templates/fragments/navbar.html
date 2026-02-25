@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<nav th:fragment="navbar" class="navbar navbar-dark bg-dark navbar-expand-lg p-3">
+    <div class="container">
+        <a class="navbar-brand text-warning fw-bold fs-3" href="/">
+            🔥 Casa de Apostas
+        </a>
+
+        <div class="text-light fs-5">
+            👤 <span th:text="${usuario.nome}">Usuário</span> | 
+            💰 Saldo: R$ <span id="saldo" th:text="${usuario.saldo}">0.00</span>
+        </div>
+    </div>
+</nav>
+
+<script>
+function atualizarSaldo() {
+    fetch("/saldo")
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("saldo").innerText = data.toFixed(2);
+        })
+        .catch(err => console.log("Erro ao atualizar saldo:", err));
+}
+
+// Atualizar a cada 3 segundos
+setInterval(atualizarSaldo, 3000);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Cassino</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    .slot-machine {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 30px;
+        margin-top: 30px;
+    }
+    .slot-numbers {
+        font-size: 5rem;
+        font-weight: bold;
+        color: #ffd700;
+        text-shadow: 0 0 10px rgba(255,215,0,0.5);
+        background: rgba(0,0,0,0.3);
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .slot-number {
+        display: inline-block;
+        width: 100px;
+        height: 100px;
+        line-height: 100px;
+        margin: 0 10px;
+        background: #fff;
+        color: #333;
+        border-radius: 10px;
+        font-size: 3rem;
+        transition: all 0.3s;
+    }
+    .slot-number.animar {
+        animation: spin 0.5s ease-in-out;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+</head>
+
+<body class="bg-dark text-light text-center">
+
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="container">
+    <div class="slot-machine">
+        <h1 class="mb-4">🎰 Cassino - Caça-níquel</h1>
+        
+        <div th:if="${erro}" class="alert alert-danger" role="alert">
+            <span th:text="${erro}"></span>
+        </div>
+        
+        <div th:if="${mensagem}" class="alert alert-success" role="alert">
+            <span th:text="${mensagem}"></span>
+        </div>
+        
+        <div class="slot-numbers">
+            <span class="slot-number" id="n1" th:text="${resultado != null ? resultado.split(' \\| ')[0] : '?'}">?</span>
+            <span class="slot-number" id="n2" th:text="${resultado != null ? resultado.split(' \\| ')[1] : '?'}">?</span>
+            <span class="slot-number" id="n3" th:text="${resultado != null ? resultado.split(' \\| ')[2] : '?'}">?</span>
+        </div>
+        
+        <form th:action="@{/cassino/jogar}" method="post" onsubmit="return animarSlots()">
+            <div class="row justify-content-center">
+                <div class="col-md-4">
+                    <input type="number" step="0.01" min="0.01" 
+                           name="valor" id="valor" 
+                           placeholder="Valor da aposta (R$)" 
+                           class="form-control form-control-lg text-center mb-3" required>
+                    
+                    <button type="submit" class="btn btn-danger btn-lg w-100">
+                        🎰 Girar (R$ 3, 10 ou perda)
+                    </button>
+                </div>
+            </div>
+        </form>
+        
+        <div class="mt-4 text-warning">
+            <p>🎯 Prêmios:</p>
+            <p>🔹 Três iguais: 10x o valor apostado</p>
+            <p>🔹 Dois iguais: 3x o valor apostado</p>
+            <p>🔹 Diferentes: perde o valor apostado</p>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+<script>
+function animarSlots() {
+    let valor = document.getElementById("valor").value;
+    if (!valor || valor <= 0) {
+        alert("Digite um valor válido!");
+        return false;
+    }
+    
+    // Animar os slots
+    for (let i = 1; i <= 3; i++) {
+        let slot = document.getElementById("n" + i);
+        slot.classList.add("animar");
+        setTimeout(() => {
+            slot.classList.remove("animar");
+        }, 500);
+    }
+    
+    return true;
+}
+</script>
+
+</body>
+</html>
