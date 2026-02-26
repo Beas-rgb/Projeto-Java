@@ -1,8 +1,17 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-<footer th:fragment="footer" class="text-center text-white p-2" style="background: #165B33; border-top: 2px solid #F7D44B; font-size: 0.8rem;">
-    <span>🇧🇷 "NUNCA ANTES NA HISTÓRIA DESTE PAÍS" - IMPOSTÔMETRO 2026 🇧🇷</span>
+<footer th:fragment="footer" class="text-center text-white p-2" style="background: #000000; border-top: 4px solid #FF8C00; font-size: 0.9rem; position: relative; overflow: hidden;">
+    <div style="position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #FF8C00, white, #FF8C00); animation: brilhoFooter 2s linear infinite;"></div>
+    <span style="color: #FF8C00; font-weight: bold; text-shadow: 1px 1px 0 white;">
+        🐯 CASA TIGRINHO - O TIGRE SEMPRE PAGA! 🐯
+    </span>
+    <style>
+        @keyframes brilhoFooter {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+    </style>
 </footer>
 </body>
 </html>
