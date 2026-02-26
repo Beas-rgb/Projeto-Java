@@ -1,332 +1,432 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<title>Avião</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<style>
-    .aviao-container {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 20px;
-        padding: 30px;
-        margin-top: 30px;
-    }
-    #multiplicador {
-        font-size: 5rem;
-        font-weight: bold;
-        color: #ffd700;
-        text-shadow: 0 0 10px rgba(255,215,0,0.5);
-        animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
-    }
-    .btn-parar {
-        font-size: 1.5rem;
-        padding: 15px 40px;
-    }
-    .regras {
-        background: rgba(255,255,255,0.1);
-        border-radius: 10px;
-        padding: 15px;
-        margin-top: 20px;
-    }
-    .status-jogo {
-        font-size: 1.5rem;
-        margin-top: 20px;
-        padding: 15px;
-        background: rgba(0,0,0,0.3);
-        border-radius: 10px;
-        font-weight: bold;
-    }
-    .ganhou {
-        color: #00ff00;
-        background: rgba(0,255,0,0.1);
-    }
-    .perdeu {
-        color: #ff4444;
-        background: rgba(255,0,0,0.1);
-        animation: tremer 0.2s;
-    }
-    @keyframes tremer {
-        0%,100% { transform: translateX(0); }
-        25% { transform: translateX(-10px); }
-        75% { transform: translateX(10px); }
-    }
-    .caindo {
-        color: #ff4444;
-        animation: tremer 0.1s infinite;
-    }
-    .alert-success {
-        background-color: rgba(0,255,0,0.2);
-        color: #00ff00;
-        border: 1px solid #00ff00;
-    }
-    .alert-danger {
-        background-color: rgba(255,0,0,0.2);
-        color: #ff4444;
-        border: 1px solid #ff4444;
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tigre Voador</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #000000 0%, #FF6B35 50%, #000000 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .jogo-container {
+            background: #000000;
+            border-radius: 40px;
+            padding: 25px;
+            border: 4px solid #FF8C00;
+            box-shadow: 0 0 40px rgba(255,140,0,0.5), 0 10px 30px rgba(0,0,0,0.8);
+            max-width: 550px;
+            width: 100%;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .jogo-container::before {
+            content: "🐯🐯🐯";
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            font-size: 5rem;
+            opacity: 0.05;
+            transform: rotate(20deg);
+            pointer-events: none;
+        }
+
+        .jogo-container::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #FF8C00, white, #FF8C00);
+            animation: brilhoTigre 2s linear infinite;
+        }
+
+        @keyframes brilhoTigre {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .titulo-jogo {
+            text-align: center;
+            color: #FF8C00;
+            font-size: 2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 2px 2px 0 white, 4px 4px 0 #000000;
+            margin-bottom: 10px;
+        }
+
+        .tigre-voador {
+            font-size: 5rem;
+            text-align: center;
+            animation: voarTigre 2s infinite;
+            filter: drop-shadow(0 0 15px #FF8C00);
+            margin: 5px 0;
+        }
+
+        @keyframes voarTigre {
+            0% { transform: translateX(-15px) translateY(0) rotate(-5deg); }
+            25% { transform: translateX(15px) translateY(-8px) rotate(0deg); }
+            50% { transform: translateX(-15px) translateY(0) rotate(5deg); }
+            75% { transform: translateX(15px) translateY(8px) rotate(0deg); }
+            100% { transform: translateX(-15px) translateY(0) rotate(-5deg); }
+        }
+
+        .multiplicador {
+            font-size: 6rem;
+            font-weight: 900;
+            color: #FF8C00;
+            text-align: center;
+            text-shadow: 3px 3px 0 white, 6px 6px 0 #000000;
+            line-height: 1;
+            margin: 5px 0;
+            animation: pulseMulti 1.5s infinite;
+        }
+
+        @keyframes pulseMulti {
+            0%,100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .status-jogo {
+            background: #1a1a1a;
+            border-radius: 50px;
+            padding: 15px;
+            text-align: center;
+            color: #FF8C00;
+            margin: 15px 0;
+            border: 2px solid #FF8C00;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: inset 0 0 15px rgba(255,140,0,0.3);
+        }
+
+        .area-aposta {
+            background: #1a1a1a;
+            border-radius: 30px;
+            padding: 20px;
+            border: 2px solid #FF8C00;
+            margin: 15px 0;
+        }
+
+        .input-tigre {
+            background: #333;
+            border: 3px solid #FF8C00;
+            color: white;
+            padding: 12px;
+            border-radius: 40px;
+            width: 100%;
+            font-size: 1.2rem;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .input-tigre:focus {
+            background: #444;
+            border-color: white;
+            outline: none;
+            box-shadow: 0 0 20px #FF8C00;
+        }
+
+        .btn-tigre {
+            background: #FF8C00;
+            color: #000000;
+            font-weight: 900;
+            border: 3px solid white;
+            border-radius: 50px;
+            padding: 12px 20px;
+            width: 100%;
+            font-size: 1.3rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            margin: 5px 0;
+            cursor: pointer;
+        }
+
+        .btn-tigre:hover {
+            background: white;
+            color: #FF8C00;
+            transform: scale(1.02);
+            box-shadow: 0 0 30px #FF8C00;
+        }
+
+        .btn-tigre:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-tigre:active {
+            transform: scale(0.98);
+        }
+
+        .btn-parar {
+            background: #000000;
+            color: #FF8C00;
+            border: 3px solid #FF8C00;
+            animation: pulseParar 1.5s infinite;
+        }
+
+        @keyframes pulseParar {
+            0%,100% { box-shadow: 0 0 15px #FF8C00; }
+            50% { box-shadow: 0 0 30px #FF8C00, 0 0 45px white; }
+        }
+
+        .info-painel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .info-box {
+            background: #1a1a1a;
+            border: 2px solid #FF8C00;
+            border-radius: 20px;
+            padding: 12px;
+            text-align: center;
+            color: #FF8C00;
+        }
+
+        .info-box div {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .info-box span {
+            display: block;
+            font-size: 2rem;
+            font-weight: 900;
+            color: white;
+            line-height: 1.2;
+        }
+
+        .regras {
+            background: #1a1a1a;
+            border-radius: 20px;
+            padding: 12px;
+            margin-top: 15px;
+            border: 1px solid #FF8C00;
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+
+        .regras h5 {
+            color: #FF8C00;
+            margin-bottom: 8px;
+        }
+
+        .regras ul {
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+
+        .regras li {
+            margin: 3px 0;
+        }
+
+        .voltar {
+            background: transparent;
+            color: white;
+            border: 2px solid #FF8C00;
+            border-radius: 40px;
+            padding: 10px;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+
+        .voltar:hover {
+            background: #FF8C00;
+            color: #000000;
+        }
+    </style>
 </head>
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
 
-<body class="bg-dark text-light text-center">
-
-<div th:replace="fragments/navbar :: navbar"></div>
-
-<div class="container">
-    <div class="aviao-container">
-        <h1 class="mb-4">✈ Avião</h1>
-        
-        <!-- Mensagens de erro/sucesso -->
-        <div th:if="${erro}" class="alert alert-danger" role="alert">
-            <span th:text="${erro}"></span>
-        </div>
-        
-        <div th:if="${resultado}" class="alert" role="alert" 
-             th:classappend="${#strings.contains(resultado, 'ganhou') ? 'alert-success' : 'alert-danger'}">
-            <span th:text="${resultado}"></span>
-        </div>
-        
-        <!-- Saldo atual (escondido para o JavaScript) -->
-        <input type="hidden" id="saldoAtual" th:value="${usuario.saldo}">
-        
-        <h2 id="multiplicador">1.0x</h2>
-        
-        <div class="status-jogo" id="statusJogo" 
-             th:classappend="${resultado != null ? (#strings.contains(resultado, 'ganhou') ? 'ganhou' : 'perdeu') : ''}">
-            <span th:if="${resultado == null}">⏸ Pronto para decolar!</span>
-            <span th:if="${resultado != null}" th:text="${#strings.contains(resultado, 'ganhou') ? '🎉 VOCÊ GANHOU! 🎉' : '💥 VOCÊ PERDEU! 💥'}"></span>
-        </div>
-        
-        <form id="jogoForm" th:action="@{/aviao/jogar}" method="post" onsubmit="return prepararEnvio()">
-            <input type="hidden" name="retirada" id="retirada" value="1.0">
-            <input type="hidden" name="valor" id="valorHidden">
+    <div class="main-content">
+        <div class="jogo-container">
+            <div class="titulo-jogo">
+                <span>🐯 TIGRE VOADOR ✈️</span>
+            </div>
             
-            <div class="row justify-content-center">
-                <div class="col-md-4">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text bg-warning text-dark">R$</span>
-                        <input type="number" step="0.01" min="0.01" 
-                               id="valorInput" 
-                               placeholder="Valor da aposta" 
-                               class="form-control form-control-lg text-center" 
-                               th:value="${valor != null ? valor : ''}" 
-                               th:disabled="${resultado != null}">
-                    </div>
+            <div class="tigre-voador">🐯✈️</div>
+            
+            <div class="multiplicador" id="multiplicador">1.0x</div>
+            
+            <div class="status-jogo" id="statusJogo">
+                <span th:if="${resultado == null}">⏸️ TIGRE PRONTO PARA VOAR</span>
+                <span th:if="${resultado != null}" th:text="${resultado}"></span>
+            </div>
+            
+            <div th:if="${erro}" class="alert alert-danger text-center p-2" style="font-size: 0.9rem;">[[${erro}]]</div>
+            
+            <form id="jogoForm" th:action="@{/aviao/jogar}" method="post" onsubmit="return prepararEnvio()">
+                <input type="hidden" name="retirada" id="retirada" value="1.0">
+                <input type="hidden" name="valor" id="valorHidden">
+                
+                <div class="area-aposta">
+                    <input type="number" step="0.01" id="valorInput" class="input-tigre" 
+                           placeholder="💰 VALOR DA APOSTA" th:disabled="${resultado != null}">
                     
-                    <!-- Botão Iniciar (mostra quando não há resultado) -->
-                    <button type="button" onclick="iniciar()" id="btnIniciar" 
-                            class="btn btn-warning btn-lg w-100 mb-3"
-                            th:if="${resultado == null}">
-                        ✈ Decolar
+                    <button type="button" onclick="iniciar()" id="btnIniciar" class="btn btn-tigre" th:if="${resultado == null}">
+                        ✈️ FAZER TIGRE VOAR
                     </button>
                     
-                    <!-- Botão Parar (mostra durante o jogo) -->
-                    <button type="submit" id="btnParar" class="btn btn-success btn-lg w-100 btn-parar mb-3" style="display: none;">
-                        💰 Parar e Retirar (R$ <span id="valorRetirada">0.00</span>)
+                    <button type="submit" id="btnParar" class="btn btn-tigre btn-parar" style="display: none;">
+                        🐯 PARAR TIGRE
                     </button>
                     
-                    <!-- Botão Jogar de Novo (mostra quando há resultado) -->
-                    <a href="/aviao" id="btnJogarNovo" class="btn btn-primary btn-lg w-100 mb-3" 
-                       th:if="${resultado != null}">
-                        🔄 Jogar de Novo
-                    </a>
-                    
-                    <!-- Botão Voltar para Home -->
-                    <a href="/" class="btn btn-secondary btn-lg w-100">
-                        🏠 Voltar para Home
+                    <a href="/aviao" id="btnJogarNovo" class="btn btn-tigre" th:if="${resultado != null}">
+                        🔄 JOGAR NOVAMENTE
                     </a>
                 </div>
+                
+                <a href="/" class="voltar">🏠 VOLTAR</a>
+            </form>
+            
+            <div class="info-painel">
+                <div class="info-box">
+                    <div>📊 MULTIPLICADOR</div>
+                    <span id="multiAtual">1.0x</span>
+                </div>
+                <div class="info-box">
+                    <div>💰 POTENCIAL</div>
+                    <span id="potencial">R$ 0</span>
+                </div>
             </div>
-        </form>
-        
-        <div class="mt-4 text-warning">
-            <p>💰 Multiplicador atual: <span id="multiAtual">1.0</span>x</p>
-            <p>💵 Potencial ganho: R$ <span id="potencial">0.00</span></p>
-            <p>💸 Saldo após jogada: R$ <span id="saldoAtualizado" th:text="${usuario.saldo}">0.00</span></p>
-        </div>
-        
-        <div class="regras text-start text-light">
-            <h5>📋 Regras do Jogo:</h5>
-            <ul>
-                <li>O avião decola com multiplicador 1.0x</li>
-                <li>A cada 0.3 segundos, o multiplicador aumenta 0.1x</li>
-                <li>Clique em "Parar" para retirar seu prêmio</li>
-                <li>Se o avião cair, você perde a aposta</li>
-                <li>Quanto mais tempo esperar, maior o prêmio, maior o risco!</li>
-            </ul>
+            
+            <div class="regras">
+                <h5>📋 REGRAS DO TIGRE:</h5>
+                <ul>
+                    <li>🐯 Tigre decola em 1.0x</li>
+                    <li>⚡ A cada 0.3s, +0.1x</li>
+                    <li>🛑 Clique PARAR para garantir</li>
+                    <li>💥 Se cair, perde tudo</li>
+                    <li>🏆 Quanto mais alto, maior o prêmio!</li>
+                </ul>
+            </div>
         </div>
     </div>
-</div>
 
-<div th:replace="fragments/footer :: footer"></div>
+    <div th:replace="fragments/footer :: footer"></div>
 
-<script>
-let saldoUsuario = parseFloat(document.getElementById("saldoAtual").value);
-let multi = 1.0;
-let intervalo;
-let ativo = false;
-let valorAposta = 0;
-
-// Função para atualizar saldo na interface
-function atualizarSaldoInterface() {
-    fetch("/saldo")
-        .then(res => res.json())
-        .then(data => {
-            saldoUsuario = data;
-            document.getElementById("saldoAtualizado").innerText = data.toFixed(2);
-            // Atualiza também o navbar se possível
-            let saldoNavbar = document.getElementById("saldo");
-            if (saldoNavbar) {
-                saldoNavbar.innerText = data.toFixed(2);
-            }
-        })
-        .catch(err => console.log("Erro ao atualizar saldo:", err));
-}
-
-// Atualiza saldo a cada 2 segundos
-setInterval(atualizarSaldoInterface, 2000);
-
-function iniciar() {
-    valorAposta = parseFloat(document.getElementById("valorInput").value);
-    
-    if (!valorAposta || valorAposta <= 0) {
-        alert("Digite um valor válido para apostar!");
-        return;
-    }
-    
-    // Verifica saldo atual
-    fetch("/saldo")
-        .then(res => res.json())
-        .then(data => {
-            saldoUsuario = data;
+    <script>
+        let multi = 1.0;
+        let intervalo;
+        let ativo = false;
+        let valorAposta = 0;
+        
+        function iniciar() {
+            valorAposta = parseFloat(document.getElementById("valorInput").value);
             
-            if (valorAposta > saldoUsuario) {
-                alert("❌ Saldo insuficiente! Seu saldo é R$ " + saldoUsuario.toFixed(2));
+            if (!valorAposta || valorAposta <= 0) {
+                alert("🐯 Digite um valor válido!");
                 return;
             }
             
-            iniciarJogo();
-        })
-        .catch(err => {
-            console.log("Erro ao verificar saldo:", err);
-            if (valorAposta > saldoUsuario) {
-                alert("❌ Saldo insuficiente! Seu saldo é R$ " + saldoUsuario.toFixed(2));
-                return;
+            fetch("/saldo")
+                .then(res => res.json())
+                .then(data => {
+                    if (valorAposta > data) {
+                        alert("❌ Saldo insuficiente! R$ " + data.toFixed(2));
+                        return;
+                    }
+                    iniciarJogo();
+                });
+        }
+        
+        function iniciarJogo() {
+            ativo = true;
+            multi = 1.0;
+            
+            document.getElementById("btnIniciar").style.display = "none";
+            document.getElementById("btnParar").style.display = "block";
+            document.getElementById("valorInput").disabled = true;
+            document.getElementById("valorHidden").value = valorAposta;
+            
+            atualizarInterface();
+            
+            intervalo = setInterval(() => {
+                if (!ativo) return;
+                
+                multi = Math.round((multi + 0.1) * 10) / 10;
+                atualizarInterface();
+                
+                let chanceQuebrar = 0.02 + (multi * 0.01);
+                if (Math.random() < chanceQuebrar) {
+                    clearInterval(intervalo);
+                    ativo = false;
+                    
+                    document.getElementById("retirada").value = "0";
+                    document.getElementById("statusJogo").innerHTML = "💥 TIGRE CAIU! 💥";
+                    document.getElementById("statusJogo").style.background = "#330000";
+                    document.getElementById("statusJogo").style.borderColor = "#FF0000";
+                    
+                    setTimeout(() => {
+                        document.getElementById("jogoForm").submit();
+                    }, 800);
+                }
+            }, 300);
+        }
+        
+        function atualizarInterface() {
+            document.getElementById("multiplicador").innerText = multi.toFixed(2) + "x";
+            document.getElementById("multiAtual").innerText = multi.toFixed(2) + "x";
+            document.getElementById("potencial").innerText = "R$ " + (valorAposta * multi).toFixed(2);
+            document.getElementById("statusJogo").innerHTML = "🐯 Tigre voando... " + multi.toFixed(2) + "x";
+        }
+        
+        function prepararEnvio() {
+            if (!ativo) {
+                alert("🐯 Inicie o jogo primeiro!");
+                return false;
             }
-            iniciarJogo();
-        });
-}
-
-function iniciarJogo() {
-    ativo = true;
-    multi = 1.0;
-    
-    // Atualiza interface
-    document.getElementById("multiplicador").innerText = multi.toFixed(2) + "x";
-    document.getElementById("multiAtual").innerText = multi.toFixed(2);
-    document.getElementById("potencial").innerText = (valorAposta * multi).toFixed(2);
-    document.getElementById("valorRetirada").innerText = (valorAposta * multi).toFixed(2);
-    document.getElementById("statusJogo").innerHTML = "✈ Avião voando... Multiplicador: " + multi.toFixed(2) + "x";
-    document.getElementById("statusJogo").className = "status-jogo";
-    
-    // Esconde/mostra botões
-    document.getElementById("btnIniciar").style.display = "none";
-    document.getElementById("btnParar").style.display = "block";
-    document.getElementById("valorInput").disabled = true;
-    
-    // Salva valor no atributo data
-    document.getElementById("valorHidden").value = valorAposta;
-    
-    intervalo = setInterval(() => {
-        if (!ativo) return;
-        
-        multi = Math.round((multi + 0.1) * 10) / 10;
-        
-        // Atualiza interface
-        document.getElementById("multiplicador").innerText = multi.toFixed(2) + "x";
-        document.getElementById("multiAtual").innerText = multi.toFixed(2);
-        document.getElementById("potencial").innerText = (valorAposta * multi).toFixed(2);
-        document.getElementById("valorRetirada").innerText = (valorAposta * multi).toFixed(2);
-        document.getElementById("statusJogo").innerHTML = "✈ Avião voando... Multiplicador: " + multi.toFixed(2) + "x";
-        
-        // Chance de quebrar aumenta com o tempo
-        let chanceQuebrar = 0.02 + (multi * 0.01);
-        if (Math.random() < chanceQuebrar) {
+            
             clearInterval(intervalo);
             ativo = false;
             
-            // Configura para envio com retirada = 0 (avião caiu)
-            document.getElementById("retirada").value = "0";
-            document.getElementById("valorHidden").value = valorAposta;
+            document.getElementById("retirada").value = multi.toFixed(1);
+            document.getElementById("statusJogo").innerHTML = "✅ VOCÊ GANHOU!";
+            document.getElementById("statusJogo").style.background = "#003300";
+            document.getElementById("statusJogo").style.borderColor = "#00FF00";
             
-            // Mostra mensagem de queda
-            document.getElementById("statusJogo").innerHTML = "💥 O AVIÃO CAIU! 💥";
-            document.getElementById("statusJogo").className = "status-jogo perdeu caindo";
-            document.getElementById("multiplicador").style.color = "#ff4444";
-            
-            // Envia o formulário após 1 segundo para dar tempo de ver a mensagem
-            setTimeout(() => {
-                document.getElementById("jogoForm").submit();
-            }, 1000);
+            return true;
         }
-    }, 300);
-}
-
-function prepararEnvio() {
-    if (!ativo) {
-        alert("Inicie o jogo primeiro!");
-        return false;
-    }
-    
-    clearInterval(intervalo);
-    ativo = false;
-    
-    // Configura os valores para envio
-    document.getElementById("retirada").value = multi.toFixed(1);
-    document.getElementById("valorHidden").value = valorAposta;
-    document.getElementById("statusJogo").innerHTML = "✅ Você retirou em " + multi.toFixed(1) + "x!";
-    document.getElementById("statusJogo").className = "status-jogo ganhou";
-    
-    return true;
-}
-
-// Quando a página carrega
-window.onload = function() {
-    // Se tem resultado, atualiza saldo e mostra mensagem apropriada
-    if (document.querySelector(".alert")) {
-        document.getElementById("valorInput").disabled = true;
         
-        // Atualiza saldo imediatamente
-        atualizarSaldoInterface();
-        
-        // Se perdeu, garante que a cor está vermelha
-        if (document.querySelector(".alert-danger")) {
-            document.getElementById("statusJogo").className = "status-jogo perdeu";
-        } else if (document.querySelector(".alert-success")) {
-            document.getElementById("statusJogo").className = "status-jogo ganhou";
-        }
-    }
-}
-
-// Atualiza potencial quando muda o valor
-document.getElementById("valorInput").addEventListener("input", function() {
-    if (!ativo) {
-        let val = parseFloat(this.value) || 0;
-        document.getElementById("potencial").innerText = (val * multi).toFixed(2);
-    }
-});
-
-// Atualiza saldo a cada 1 segundo durante o jogo
-setInterval(() => {
-    if (ativo) {
-        atualizarSaldoInterface();
-    }
-}, 1000);
-</script>
-
+        document.getElementById("valorInput").addEventListener("input", function() {
+            if (!ativo) {
+                let val = parseFloat(this.value) || 0;
+                document.getElementById("potencial").innerText = "R$ " + (val * multi).toFixed(2);
+            }
+        });
+    </script>
 </body>
 </html>

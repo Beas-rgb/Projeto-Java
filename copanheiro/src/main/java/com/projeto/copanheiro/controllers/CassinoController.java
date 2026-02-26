@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import com.projeto.copanheiro.models.Usuario;
 import com.projeto.copanheiro.repositories.UsuarioRepository;
+import com.projeto.copanheiro.services.UsuarioService;
 
 @Controller
 @RequestMapping("/cassino")
@@ -14,17 +15,20 @@ public class CassinoController {
 
     @Autowired
     private UsuarioRepository repository;
+    
+    @Autowired
+    private UsuarioService usuarioService;
 
     @GetMapping
     public String cassino(Model model) {
-        model.addAttribute("usuario", repository.findAll().get(0));
+        model.addAttribute("usuario", usuarioService.getUsuario());
         return "cassino";
     }
 
     @PostMapping("/jogar")
     public String jogar(@RequestParam double valor, Model model) {
 
-        Usuario usuario = repository.findAll().get(0);
+        Usuario usuario = usuarioService.getUsuario();
         Random random = new Random();
 
         if (valor <= 0) {

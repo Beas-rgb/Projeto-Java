@@ -1,33 +1,270 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .navbar-tigrinho {
+            background: linear-gradient(90deg, #FF6B35 0%, #000000 50%, #FF6B35 100%);
+            border-bottom: 4px solid #FF8C00;
+            position: relative;
+            padding: 0.5rem 1rem !important;
+        }
+        .navbar-tigrinho::after {
+            content: "🐯";
+            position: absolute;
+            right: 10px;
+            top: 5px;
+            font-size: 1.8rem;
+            opacity: 0.3;
+            transform: rotate(10deg);
+        }
+        .brand-tigrinho {
+            font-weight: 900;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 0 #FF8C00, 4px 4px 0 #000000;
+            letter-spacing: 2px;
+            font-size: 1.3rem;
+            color: white !important;
+        }
+        .saldo-tigrinho {
+            background: #FF8C00;
+            color: #000000;
+            font-weight: bold;
+            padding: 8px 20px;
+            border-radius: 30px;
+            border: 2px solid white;
+            box-shadow: 0 0 15px #FF8C00;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+        .btn-tigrinho {
+            background: #000000;
+            color: #FF8C00;
+            font-weight: bold;
+            border: 2px solid #FF8C00;
+            border-radius: 30px;
+            padding: 8px 20px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .btn-tigrinho:hover {
+            background: #FF8C00;
+            color: #000000;
+            transform: scale(1.02);
+            box-shadow: 0 0 20px #FF8C00;
+        }
+        .user-tigrinho {
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-right: 10px;
+        }
+    </style>
+</head>
 <body>
 
-<nav th:fragment="navbar" class="navbar navbar-dark bg-dark navbar-expand-lg p-3">
-    <div class="container">
-        <a class="navbar-brand text-warning fw-bold fs-3" href="/">
-            🔥 Casa de Apostas
+<nav th:fragment="navbar" class="navbar navbar-dark navbar-expand-lg navbar-tigrinho">
+    <div class="container-fluid">
+        <a class="navbar-brand brand-tigrinho" href="/">
+            🐯 CASA TIGRINHO 🐯
         </a>
 
-        <div class="text-light fs-5">
-            👤 <span th:text="${usuario.nome}">Usuário</span> | 
-            💰 Saldo: R$ <span id="saldo" th:text="${usuario.saldo}">0.00</span>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <span class="nav-link user-tigrinho" th:if="${usuario != null}">
+                        👤 <span th:text="${usuario.nome}">Jogador</span>
+                    </span>
+                </li>
+                <li class="nav-item">
+                    <span class="nav-link saldo-tigrinho" th:if="${usuario != null}">
+                        R$ <span id="saldo" th:text="${usuario.saldo}">1000.00</span>
+                    </span>
+                </li>
+                <li class="nav-item">
+                    <button onclick="adicionarSaldo()" class="btn btn-tigrinho ms-2" id="btnAdicionarSaldo">
+                        🐯 + R$ 1000
+                    </button>
+                </li>
+            </ul>
         </div>
     </div>
 </nav>
 
+<!-- Script ÚNICO e GLOBAL para controle de saldo -->
 <script>
-function atualizarSaldo() {
-    fetch("/saldo")
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById("saldo").innerText = data.toFixed(2);
-        })
-        .catch(err => console.log("Erro ao atualizar saldo:", err));
+// ==================== SISTEMA DE SALDO GLOBAL ====================
+
+// Função para adicionar saldo (chamada pelo botão)
+function adicionarSaldo() {
+    console.log("🟢 Botão de adicionar saldo clicado!");
+    
+    // Mostra feedback imediato
+    const btn = document.getElementById('btnAdicionarSaldo');
+    const originalText = btn.innerText;
+    btn.innerText = "⏳ ADICIONANDO...";
+    btn.disabled = true;
+    
+    // Faz a requisição POST
+    fetch('/reset-saldo', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => {
+        console.log("📡 Resposta recebida:", response.status);
+        if (!response.ok) {
+            throw new Error('Erro HTTP: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log("💰 Novo saldo recebido:", data.saldo);
+        
+        // ATUALIZA TODOS OS ELEMENTOS DE SALDO NA PÁGINA
+        atualizarTodosSaldos(data.saldo);
+        
+        // Feedback de sucesso
+        btn.innerText = "✅ ADICIONADO!";
+        btn.style.background = "#FF8C00";
+        btn.style.color = "#000000";
+        
+        setTimeout(() => {
+            btn.innerText = originalText;
+            btn.style.background = "#000000";
+            btn.style.color = "#FF8C00";
+            btn.disabled = false;
+        }, 2000);
+        
+        // Mostra mensagem de sucesso
+        mostrarMensagem('✅ R$ 1000 adicionado com sucesso!', 'sucesso');
+    })
+    .catch(error => {
+        console.error("🔴 Erro:", error);
+        btn.innerText = "❌ ERRO";
+        
+        setTimeout(() => {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }, 2000);
+        
+        mostrarMensagem('❌ Erro ao adicionar saldo!', 'erro');
+    });
 }
 
-// Atualizar a cada 3 segundos
-setInterval(atualizarSaldo, 3000);
+// Função para atualizar TODOS os elementos de saldo na página
+function atualizarTodosSaldos(novoSaldo) {
+    console.log("Atualizando saldos para:", novoSaldo);
+    
+    // Formata o valor
+    const saldoFormatado = novoSaldo.toFixed(2);
+    
+    // 1. Atualiza o elemento principal do navbar (id="saldo")
+    const saldoNavbar = document.getElementById('saldo');
+    if (saldoNavbar) {
+        saldoNavbar.innerText = saldoFormatado;
+        console.log("✅ Navbar atualizado");
+    }
+    
+    // 2. Atualiza todos os elementos com id="saldoAtualizado" (usado nos jogos)
+    document.querySelectorAll('[id="saldoAtualizado"]').forEach(el => {
+        el.innerText = saldoFormatado;
+    });
+    
+    // 3. Atualiza inputs hidden com saldo
+    document.querySelectorAll('[id="saldoAtual"]').forEach(el => {
+        if (el.tagName === 'INPUT') {
+            el.value = novoSaldo;
+        } else {
+            el.innerText = saldoFormatado;
+        }
+    });
+    
+    // 4. Dispara evento personalizado para outros scripts
+    window.dispatchEvent(new CustomEvent('saldoAtualizado', { 
+        detail: { saldo: novoSaldo } 
+    }));
+}
+
+// Função para buscar saldo atual da API
+function buscarSaldoAtual() {
+    fetch('/saldo')
+        .then(response => response.json())
+        .then(data => {
+            console.log("📊 Saldo atual via API:", data);
+            atualizarTodosSaldos(data);
+        })
+        .catch(error => console.error("Erro ao buscar saldo:", error));
+}
+
+// Função para mostrar mensagens temporárias
+function mostrarMensagem(texto, tipo) {
+    // Cria elemento de mensagem se não existir
+    let msgDiv = document.getElementById('mensagemGlobal');
+    if (!msgDiv) {
+        msgDiv = document.createElement('div');
+        msgDiv.id = 'mensagemGlobal';
+        msgDiv.style.position = 'fixed';
+        msgDiv.style.top = '80px';
+        msgDiv.style.right = '20px';
+        msgDiv.style.padding = '15px 25px';
+        msgDiv.style.borderRadius = '50px';
+        msgDiv.style.zIndex = '9999';
+        msgDiv.style.fontWeight = 'bold';
+        msgDiv.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+        msgDiv.style.transition = 'all 0.3s';
+        document.body.appendChild(msgDiv);
+    }
+    
+    // Configura cor
+    if (tipo === 'sucesso') {
+        msgDiv.style.background = '#FF8C00';
+        msgDiv.style.color = '#000000';
+        msgDiv.style.border = '2px solid white';
+    } else {
+        msgDiv.style.background = '#FF0000';
+        msgDiv.style.color = 'white';
+        msgDiv.style.border = '2px solid #FF8C00';
+    }
+    
+    msgDiv.innerText = texto;
+    msgDiv.style.opacity = '1';
+    
+    // Remove após 3 segundos
+    setTimeout(() => {
+        msgDiv.style.opacity = '0';
+        setTimeout(() => {
+            if (msgDiv.parentNode) {
+                msgDiv.remove();
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Inicialização quando a página carrega
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("🚀 Navbar carregado, buscando saldo...");
+    buscarSaldoAtual();
+});
+
+// Atualiza saldo a cada 5 segundos
+setInterval(buscarSaldoAtual, 5000);
+
+// Expõe funções globalmente
+window.adicionarSaldo = adicionarSaldo;
+window.atualizarTodosSaldos = atualizarTodosSaldos;
+window.buscarSaldoAtual = buscarSaldoAtual;
+
+console.log("✅ Sistema de saldo global carregado!");
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

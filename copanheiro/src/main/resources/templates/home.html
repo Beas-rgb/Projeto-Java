@@ -1,65 +1,355 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<title>Casa de Apostas</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<style>
-    .jogo-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 20px;
-        padding: 30px;
-        transition: transform 0.3s;
-        cursor: pointer;
-        text-decoration: none;
-        color: white;
-        display: block;
-    }
-    .jogo-card:hover {
-        transform: scale(1.05);
-        text-decoration: none;
-        color: white;
-    }
-    .jogo-icone {
-        font-size: 4rem;
-        margin-bottom: 15px;
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casa Tigrinho</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #000000 0%, #FF6B35 50%, #000000 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 10px;
+        }
+
+        .container-custom {
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* CABEÇALHO TIGRINHO */
+        .header-tigrinho {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .titulo-principal {
+            font-size: 2.8rem;
+            font-weight: 900;
+            color: #FF8C00;
+            text-shadow: 3px 3px 0 #000000, 5px 5px 0 white, 7px 7px 0 #FF6B35;
+            letter-spacing: 2px;
+            animation: pulseTigre 2s infinite;
+            line-height: 1.2;
+        }
+
+        @keyframes pulseTigre {
+            0%,100% { transform: scale(1); }
+            50% { transform: scale(1.02); text-shadow: 3px 3px 0 #000000, 5px 5px 0 white, 7px 7px 0 #FF6B35, 0 0 20px #FF8C00; }
+        }
+
+        .subtitulo {
+            background: rgba(0,0,0,0.8);
+            color: #FF8C00;
+            padding: 8px 20px;
+            border-radius: 50px;
+            display: inline-block;
+            border: 2px solid #FF8C00;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-top: 5px;
+            box-shadow: 0 0 15px rgba(255,140,0,0.5);
+        }
+
+        /* CARDS DOS JOGOS */
+        .row-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 15px 0;
+        }
+
+        .jogo-card {
+            background: #000000;
+            border-radius: 20px;
+            padding: 18px 10px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: white;
+            display: block;
+            border: 3px solid #FF8C00;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        .jogo-card::before {
+            content: "🐯";
+            position: absolute;
+            bottom: -10px;
+            right: -10px;
+            font-size: 4rem;
+            opacity: 0.1;
+            transform: rotate(-15deg);
+            transition: all 0.3s;
+        }
+
+        .jogo-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: white;
+            box-shadow: 0 0 30px #FF8C00, 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        .jogo-card:hover::before {
+            opacity: 0.2;
+            transform: rotate(-5deg) scale(1.1);
+        }
+
+        .jogo-icone {
+            font-size: 3.5rem;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 0 8px #FF8C00);
+            transition: all 0.3s;
+        }
+
+        .jogo-card:hover .jogo-icone {
+            transform: scale(1.1);
+        }
+
+        .jogo-titulo {
+            color: #FF8C00;
+            font-size: 1.2rem;
+            font-weight: 900;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .jogo-descricao {
+            font-size: 0.8rem;
+            color: #ccc;
+            margin-bottom: 8px;
+        }
+
+        .badge-tigre {
+            background: #FF8C00;
+            color: #000000;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 900;
+            display: inline-block;
+            border: 1px solid white;
+            text-transform: uppercase;
+        }
+
+        .patas-container {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin: 8px 0 5px;
+        }
+
+        .pata {
+            color: #FF8C00;
+            font-size: 1rem;
+            opacity: 0.7;
+        }
+
+        /* MARQUEE TIGRE */
+        .marquee-tigre {
+            background: #000000;
+            border: 3px solid #FF8C00;
+            border-radius: 50px;
+            padding: 10px;
+            margin-top: 20px;
+            box-shadow: 0 0 20px rgba(255,140,0,0.5);
+        }
+
+        .marquee-text {
+            color: #FF8C00;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .marquee-text span {
+            color: white;
+            margin: 0 15px;
+        }
+
+        /* RESPONSIVIDADE */
+        @media (max-width: 768px) {
+            .row-cards {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .titulo-principal {
+                font-size: 2rem;
+            }
+            
+            .jogo-titulo {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .row-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .jogo-card {
+                padding: 15px;
+            }
+        }
+
+        /* ANIMAÇÕES EXTRAS */
+        .destaque-tigre {
+            position: relative;
+        }
+
+        .destaque-tigre::after {
+            content: "🐾";
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 1.2rem;
+            opacity: 0.5;
+        }
+    </style>
 </head>
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
 
-<body class="bg-dark text-light">
+    <div class="main-content">
+        <div class="container-custom">
+            <!-- CABEÇALHO -->
+            <div class="header-tigrinho">
+                <h1 class="titulo-principal">
+                    🐯 CASA TIGRINHO 🐯
+                </h1>
+                <div class="subtitulo">
+                    ⚡ O TIGRE SEMPRE PAGA! ⚡
+                </div>
+            </div>
 
-<div th:replace="fragments/navbar :: navbar"></div>
+            <!-- CARDS DOS JOGOS -->
+            <div class="row-cards">
+                <!-- JOGO 1 - AVIÃO -->
+                <a href="/aviao" class="jogo-card">
+                    <div class="text-center">
+                        <div class="jogo-icone">✈️</div>
+                        <div class="jogo-titulo">TIGRE VOADOR</div>
+                        <div class="jogo-descricao">Multiplicador crescente até 20x</div>
+                        <div class="patas-container">
+                            <span class="pata">🐾</span>
+                            <span class="pata">🐾</span>
+                            <span class="pata">🐾</span>
+                        </div>
+                        <span class="badge-tigre">ATÉ 20X</span>
+                    </div>
+                </a>
 
-<div class="container text-center mt-5">
-    <h1 class="text-warning mb-5">Escolha seu jogo</h1>
+                <!-- JOGO 2 - ROLETA -->
+                <a href="/roleta" class="jogo-card">
+                    <div class="text-center">
+                        <div class="jogo-icone">🎯</div>
+                        <div class="jogo-titulo">ROLETA DO TIGRE</div>
+                        <div class="jogo-descricao">Acerte o número e ganhe 5x</div>
+                        <div class="patas-container">
+                            <span class="pata">🐾</span>
+                            <span class="pata">🐾</span>
+                            <span class="pata">🐾</span>
+                        </div>
+                        <span class="badge-tigre">5X</span>
+                    </div>
+                </a>
 
-    <div class="row">
-        <div class="col-md-4 mb-4">
-            <a href="/aviao" class="jogo-card">
-                <div class="jogo-icone">✈</div>
-                <h3>Avião</h3>
-                <p>Multiplicador crescente! Retire antes de quebrar.</p>
-            </a>
-        </div>
-        <div class="col-md-4 mb-4">
-            <a href="/roleta" class="jogo-card">
-                <div class="jogo-icone">🎯</div>
-                <h3>Roleta</h3>
-                <p>Acerte o número de 0 a 9 e ganhe 5x!</p>
-            </a>
-        </div>
-        <div class="col-md-4 mb-4">
-            <a href="/cassino" class="jogo-card">
-                <div class="jogo-icone">🎰</div>
-                <h3>Cassino</h3>
-                <p>Caça-níquel com prêmios de 3x e 10x!</p>
-            </a>
+                <!-- JOGO 3 - CASSINO -->
+                <a href="/cassino" class="jogo-card">
+                    <div class="text-center">
+                        <div class="jogo-icone">🎰</div>
+                        <div class="jogo-titulo">CAÇA-NÍQUEL</div>
+                        <div class="jogo-descricao">3 iguais = 10x, 2 iguais = 3x</div>
+                        <div class="patas-container">
+                            <span class="pata">🐾</span>
+                            <span class="pata">🐾</span>
+                            <span class="pata">🐾</span>
+                        </div>
+                        <span class="badge-tigre">10X</span>
+                    </div>
+                </a>
+
+                <!-- JOGO 4 - PERSONALIZADOS -->
+                <a href="/jogos-personalizados" class="jogo-card destaque-tigre">
+                    <div class="text-center">
+                        <div class="jogo-icone">📝</div>
+                        <div class="jogo-titulo">CRIE SEU JOGO</div>
+                        <div class="jogo-descricao">Regras personalizadas</div>
+                        <div class="patas-container">
+                            <span class="pata">🐾</span>
+                            <span class="pata">🐾</span>
+                            <span class="pata">🐾</span>
+                        </div>
+                        <span class="badge-tigre">🐯</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- ESTATÍSTICAS RÁPIDAS -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0;">
+                <div style="background: #000000; border: 2px solid #FF8C00; border-radius: 15px; padding: 10px; text-align: center;">
+                    <div style="color: #FF8C00; font-size: 1.5rem; font-weight: bold;">🐯</div>
+                    <div style="color: white; font-size: 0.9rem;">TIGRES ONLINE</div>
+                    <div style="color: #FF8C00; font-weight: bold;">1.337</div>
+                </div>
+                <div style="background: #000000; border: 2px solid #FF8C00; border-radius: 15px; padding: 10px; text-align: center;">
+                    <div style="color: #FF8C00; font-size: 1.5rem; font-weight: bold;">💰</div>
+                    <div style="color: white; font-size: 0.9rem;">BANCA TOTAL</div>
+                    <div style="color: #FF8C00; font-weight: bold;">R$ 1.5M</div>
+                </div>
+                <div style="background: #000000; border: 2px solid #FF8C00; border-radius: 15px; padding: 10px; text-align: center;">
+                    <div style="color: #FF8C00; font-size: 1.5rem; font-weight: bold;">🏆</div>
+                    <div style="color: white; font-size: 0.9rem;">MAIOR PRÊMIO</div>
+                    <div style="color: #FF8C00; font-weight: bold;">R$ 50k</div>
+                </div>
+            </div>
+
+            <!-- MARQUEE TIGRE -->
+            <div class="marquee-tigre">
+                <marquee behavior="alternate" direction="left" scrollamount="5">
+                    <span class="marquee-text">
+                        🐯 O TIGRE ESTÁ SOLTO! 🐯 • GANHE ATÉ 20X • 🐯 SORTE GRANDE • 🐯 NÃO FIQUE DE FORA • 🐯 
+                        <span>🔥</span> JACKPOT ACUMULADO • <span>🔥</span> R$ 50.000,00 • <span>🔥</span>
+                        🐯 TIGRE PAGA HOJE! 🐯
+                    </span>
+                </marquee>
+            </div>
+
+            <!-- FRASE DO DIA -->
+            <div style="text-align: center; margin-top: 15px; color: white; font-style: italic;">
+                "O tigre não perde a sua vez... e nem você vai perder!"
+            </div>
         </div>
     </div>
-</div>
 
-<div th:replace="fragments/footer :: footer"></div>
+    <div th:replace="fragments/footer :: footer"></div>
 
+    <!-- SCRIPTS -->
+    <script>
+        // Pequena animação para os cards
+        document.querySelectorAll('.jogo-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transition = 'all 0.3s ease';
+            });
+        });
+    </script>
 </body>
 </html>

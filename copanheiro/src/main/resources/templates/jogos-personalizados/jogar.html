@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${jogo.nome}">Jogo Tigrinho</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #000000 0%, #FF6B35 50%, #000000 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .jogo-container {
+            background: #000000;
+            border-radius: 40px;
+            padding: 25px;
+            border: 4px solid #FF8C00;
+            box-shadow: 0 0 40px rgba(255,140,0,0.5), 0 10px 30px rgba(0,0,0,0.8);
+            max-width: 550px;
+            width: 100%;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .jogo-container::before {
+            content: "🐯🐯🐯";
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            font-size: 5rem;
+            opacity: 0.05;
+            transform: rotate(20deg);
+            pointer-events: none;
+        }
+
+        .jogo-container::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #FF8C00, white, #FF8C00);
+            animation: brilhoTigre 2s linear infinite;
+        }
+
+        @keyframes brilhoTigre {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .header-jogo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .tipo-badge {
+            background: #FF8C00;
+            color: #000000;
+            padding: 5px 15px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 900;
+            display: inline-block;
+            border: 2px solid white;
+            margin-bottom: 10px;
+        }
+
+        .titulo-jogo {
+            color: #FF8C00;
+            font-size: 2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 0 white, 4px 4px 0 #000000;
+            letter-spacing: 2px;
+            margin: 5px 0;
+        }
+
+        .icone-jogo {
+            font-size: 4rem;
+            text-align: center;
+            margin: 10px 0;
+            filter: drop-shadow(0 0 15px #FF8C00);
+            animation: pulseIcone 2s infinite;
+        }
+
+        @keyframes pulseIcone {
+            0%,100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* MOEDA 3D */
+        .moeda-container {
+            perspective: 1000px;
+            width: 150px;
+            height: 150px;
+            margin: 15px auto;
+            display: none;
+        }
+
+        .moeda-container.ativo {
+            display: block;
+        }
+
+        .moeda {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.1s;
+        }
+
+        .moeda.girando {
+            animation: girarMoeda 0.3s linear infinite;
+        }
+
+        @keyframes girarMoeda {
+            0% { transform: rotateY(0deg); }
+            100% { transform: rotateY(360deg); }
+        }
+
+        .moeda.parando {
+            animation: pararMoeda 0.5s ease-out;
+        }
+
+        @keyframes pararMoeda {
+            0% { transform: rotateY(720deg); }
+            100% { transform: rotateY(0deg); }
+        }
+
+        .face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            border: 4px solid #FF8C00;
+        }
+
+        .face.cara {
+            background: radial-gradient(circle at 30% 30%, #FF8C00, #CC7000);
+            transform: rotateY(0deg);
+            color: #000000;
+        }
+
+        .face.coroa {
+            background: radial-gradient(circle at 30% 30%, #FFFFFF, #CCCCCC);
+            transform: rotateY(180deg);
+            color: #FF8C00;
+        }
+
+        /* DADO 3D */
+        .dado-container {
+            perspective: 1000px;
+            width: 120px;
+            height: 120px;
+            margin: 15px auto;
+            display: none;
+        }
+
+        .dado-container.ativo {
+            display: block;
+        }
+
+        .dado {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.1s;
+        }
+
+        .dado.girando {
+            animation: girarDado 0.2s linear infinite;
+        }
+
+        @keyframes girarDado {
+            0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+            100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg); }
+        }
+
+        .face-dado {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: white;
+            border: 3px solid #FF8C00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #000000;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        .face1 { transform: translateZ(60px); }
+        .face2 { transform: rotateY(180deg) translateZ(60px); }
+        .face3 { transform: rotateY(90deg) translateZ(60px); }
+        .face4 { transform: rotateY(-90deg) translateZ(60px); }
+        .face5 { transform: rotateX(90deg) translateZ(60px); }
+        .face6 { transform: rotateX(-90deg) translateZ(60px); }
+
+        /* ÁREA DE ESCOLHA */
+        .area-escolha {
+            background: #1a1a1a;
+            border-radius: 30px;
+            padding: 20px;
+            border: 2px solid #FF8C00;
+            margin: 20px 0;
+        }
+
+        .escolhas-duas {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 15px 0;
+        }
+
+        .btn-escolha-duas {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 4px solid #FF8C00;
+            font-size: 3rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #333;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-escolha-duas:hover {
+            background: #FF8C00;
+            color: #000000;
+            transform: scale(1.1);
+            border-color: white;
+        }
+
+        .btn-escolha-duas.selecionado {
+            background: #FF8C00;
+            color: #000000;
+            border-color: white;
+            box-shadow: 0 0 30px #FF8C00;
+        }
+
+        .escolhas-seis {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn-escolha-seis {
+            width: 65px;
+            height: 65px;
+            border-radius: 15px;
+            border: 3px solid #FF8C00;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #333;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .btn-escolha-seis:hover {
+            background: #FF8C00;
+            color: #000000;
+            transform: scale(1.1);
+            border-color: white;
+        }
+
+        .btn-escolha-seis.selecionado {
+            background: #FF8C00;
+            color: #000000;
+            border-color: white;
+            box-shadow: 0 0 30px #FF8C00;
+        }
+
+        .input-tigre {
+            background: #333;
+            border: 3px solid #FF8C00;
+            color: white;
+            padding: 12px;
+            border-radius: 40px;
+            width: 100%;
+            font-size: 1.2rem;
+            text-align: center;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .input-tigre:focus {
+            background: #444;
+            border-color: white;
+            outline: none;
+            box-shadow: 0 0 20px #FF8C00;
+        }
+
+        .btn-jogar {
+            background: #FF8C00;
+            color: #000000;
+            font-weight: 900;
+            border: 3px solid white;
+            border-radius: 50px;
+            padding: 15px;
+            width: 100%;
+            font-size: 1.3rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .btn-jogar:hover:not(:disabled) {
+            background: white;
+            color: #FF8C00;
+            transform: scale(1.02);
+            box-shadow: 0 0 30px #FF8C00;
+        }
+
+        .btn-jogar:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .resultado {
+            font-size: 1.2rem;
+            padding: 15px;
+            border-radius: 30px;
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0;
+            animation: apareceResultado 0.5s;
+        }
+
+        @keyframes apareceResultado {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .ganhou { 
+            background: rgba(255,140,0,0.3); 
+            color: #FF8C00; 
+            border: 2px solid #FF8C00;
+        }
+
+        .perdeu { 
+            background: rgba(255,0,0,0.3); 
+            color: white; 
+            border: 2px solid #FF0000;
+        }
+
+        .info-painel {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .info-box {
+            background: #1a1a1a;
+            border: 2px solid #FF8C00;
+            border-radius: 20px;
+            padding: 10px;
+            text-align: center;
+            color: #FF8C00;
+        }
+
+        .info-box div {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .info-box span {
+            display: block;
+            font-size: 1.3rem;
+            font-weight: 900;
+            color: white;
+        }
+
+        .voltar {
+            background: transparent;
+            color: white;
+            border: 2px solid #FF8C00;
+            border-radius: 40px;
+            padding: 12px;
+            width: 100%;
+            margin-top: 15px;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .voltar:hover {
+            background: #FF8C00;
+            color: #000000;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+            color: #FF8C00;
+            font-size: 2rem;
+        }
+
+        .loading-overlay.ativo {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 80px;
+            height: 80px;
+            border: 8px solid #333;
+            border-top: 8px solid #FF8C00;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ALERTAS */
+        .alert-custom {
+            padding: 10px;
+            border-radius: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <div class="main-content">
+        <div class="jogo-container" th:style="'background: ' + (${jogo.corFundo} ?: '#000000') + ';'">
+            
+            <!-- CABEÇALHO -->
+            <div class="header-jogo">
+                <span class="tipo-badge" th:text="${jogo.tipoDinamica == 'caraOuCoroa' ? '🪙 CARA OU COROA' : '🎲 DADO DO TIGRE'}">tipo</span>
+                <div class="titulo-jogo">
+                    <span th:text="${jogo.nome}">Jogo Tigrinho</span>
+                </div>
+                <div class="icone-jogo" th:text="${jogo.icone ?: (jogo.tipoDinamica == 'caraOuCoroa' ? '🪙' : '🎲')}">🐯</div>
+            </div>
+
+            <!-- MOEDA (só aparece se for Cara ou Coroa) -->
+            <div class="moeda-container" th:classappend="${jogo.tipoDinamica == 'caraOuCoroa' ? 'ativo' : ''}">
+                <div class="moeda" id="moeda">
+                    <div class="face cara">🐯</div>
+                    <div class="face coroa">👑</div>
+                </div>
+            </div>
+
+            <!-- DADO (só aparece se for Dado) -->
+            <div class="dado-container" th:classappend="${jogo.tipoDinamica == 'dado' ? 'ativo' : ''}">
+                <div class="dado" id="dado">
+                    <div class="face-dado face1">1</div>
+                    <div class="face-dado face2">2</div>
+                    <div class="face-dado face3">3</div>
+                    <div class="face-dado face4">4</div>
+                    <div class="face-dado face5">5</div>
+                    <div class="face-dado face6">6</div>
+                </div>
+            </div>
+
+            <!-- MENSAGENS -->
+            <div th:if="${erro}" class="alert alert-danger text-center p-2" style="font-size: 0.9rem; border-radius: 30px;">❌ [[${erro}]]</div>
+            
+            <div th:if="${resultado}" class="resultado" th:classappend="${#strings.contains(resultado, 'ganhou') ? 'ganhou' : 'perdeu'}">
+                [[${resultado}]]
+            </div>
+
+            <!-- LOADING -->
+            <div class="loading-overlay" id="loading">
+                <div class="loading-spinner"></div>
+                <div>🐯 GIRANDO... 🐯</div>
+            </div>
+
+            <!-- FORMULÁRIO -->
+            <form th:action="@{/jogos-personalizados/jogar/{id}(id=${jogo.id})}" method="post" id="jogoForm">
+                <input type="hidden" name="valor" id="valorHidden">
+                <input type="hidden" name="escolha" id="escolhaHidden">
+                
+                <div class="area-escolha">
+                    <div style="color: #FF8C00; text-align: center; margin-bottom: 15px; font-weight: bold;">
+                        🐯 ESCOLHA SUA APOSTA:
+                    </div>
+                    
+                    <!-- CARA OU COROA (2 opções) -->
+                    <div th:if="${jogo.tipoDinamica == 'caraOuCoroa'}" class="escolhas-duas">
+                        <div class="btn-escolha-duas" onclick="selecionarCaraOuCoroa('CARA')" id="btnCara">🐯</div>
+                        <div class="btn-escolha-duas" onclick="selecionarCaraOuCoroa('COROA')" id="btnCoroa">👑</div>
+                    </div>
+                    
+                    <!-- DADO (6 opções) - CORRIGIDO -->
+                    <div th:if="${jogo.tipoDinamica == 'dado'}" class="escolhas-seis">
+                        <div class="btn-escolha-seis" onclick="selecionarDado(1)">1</div>
+                        <div class="btn-escolha-seis" onclick="selecionarDado(2)">2</div>
+                        <div class="btn-escolha-seis" onclick="selecionarDado(3)">3</div>
+                        <div class="btn-escolha-seis" onclick="selecionarDado(4)">4</div>
+                        <div class="btn-escolha-seis" onclick="selecionarDado(5)">5</div>
+                        <div class="btn-escolha-seis" onclick="selecionarDado(6)">6</div>
+                    </div>
+
+                    <!-- INPUT DE VALOR -->
+                    <input type="number" step="0.01" th:min="${jogo.apostaMinima}" 
+                           id="valorInput" class="input-tigre" 
+                           th:placeholder="'💰 Mínimo R$ ' + ${jogo.apostaMinima}" required>
+                    
+                    <!-- BOTÃO JOGAR -->
+                    <button type="button" class="btn-jogar" onclick="jogar()" id="btnJogar">
+                        <span th:if="${jogo.tipoDinamica == 'caraOuCoroa'}">🪙 JOGAR CARA OU COROA</span>
+                        <span th:if="${jogo.tipoDinamica == 'dado'}">🎲 JOGAR DADO</span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- PAINEL DE INFORMAÇÕES -->
+            <div class="info-painel">
+                <div class="info-box">
+                    <div>🏆 PRÊMIO</div>
+                    <span th:text="${jogo.tipoDinamica == 'caraOuCoroa' ? '2x' : '4x'}">2x</span>
+                </div>
+                <div class="info-box">
+                    <div>💰 MÍNIMO</div>
+                    <span>R$ [[${jogo.apostaMinima}]]</span>
+                </div>
+                <div class="info-box">
+                    <div>📊 CHANCE</div>
+                    <span th:text="${jogo.tipoDinamica == 'caraOuCoroa' ? '50%' : '16.6%'}">50%</span>
+                </div>
+            </div>
+            
+            <a href="/jogos-personalizados" class="voltar">🐾 VOLTAR AOS JOGOS 🐾</a>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script>
+        // ========== VARIÁVEIS GLOBAIS ==========
+        const tipoJogo = '[[${jogo.tipoDinamica}]]';
+        let escolhaSelecionada = '';
+        let jogando = false;
+        
+        // Elementos
+        const moeda = document.getElementById('moeda');
+        const dado = document.getElementById('dado');
+        const btnJogar = document.getElementById('btnJogar');
+        const loading = document.getElementById('loading');
+        
+        // ========== FUNÇÕES PARA CARA OU COROA ==========
+        function selecionarCaraOuCoroa(valor) {
+            if (jogando) return;
+            escolhaSelecionada = valor;
+            
+            // Remove seleção anterior
+            document.querySelectorAll('.btn-escolha-duas').forEach(btn => {
+                btn.classList.remove('selecionado');
+            });
+            
+            // Adiciona seleção no botão clicado
+            if (valor === 'CARA') {
+                document.getElementById('btnCara').classList.add('selecionado');
+            } else {
+                document.getElementById('btnCoroa').classList.add('selecionado');
+            }
+        }
+        
+        // ========== FUNÇÕES PARA DADO ==========
+        function selecionarDado(numero) {
+            if (jogando) return;
+            escolhaSelecionada = numero.toString();
+            
+            // Remove seleção anterior
+            document.querySelectorAll('.btn-escolha-seis').forEach(btn => {
+                btn.classList.remove('selecionado');
+            });
+            
+            // Adiciona seleção no botão clicado (encontra o botão pelo texto)
+            document.querySelectorAll('.btn-escolha-seis').forEach(btn => {
+                if (btn.innerText === numero.toString()) {
+                    btn.classList.add('selecionado');
+                }
+            });
+        }
+        
+        // ========== FUNÇÃO PRINCIPAL DE JOGAR ==========
+        function jogar() {
+            if (jogando) return;
+            
+            let valor = document.getElementById('valorInput').value;
+            
+            if (!valor || valor <= 0) {
+                alert('🐯 Digite um valor válido!');
+                return;
+            }
+            
+            if (!escolhaSelecionada) {
+                if (tipoJogo === 'caraOuCoroa') {
+                    alert('🐯 Escolha CARA (🐯) ou COROA (👑)!');
+                } else {
+                    alert('🎲 Escolha um número de 1 a 6!');
+                }
+                return;
+            }
+            
+            // Verifica saldo
+            fetch('/saldo')
+                .then(res => res.json())
+                .then(saldo => {
+                    if (parseFloat(valor) > saldo) {
+                        alert('❌ Saldo insuficiente! R$ ' + saldo.toFixed(2));
+                        return;
+                    }
+                    
+                    jogando = true;
+                    btnJogar.disabled = true;
+                    loading.classList.add('ativo');
+                    
+                    // Animação específica
+                    if (tipoJogo === 'caraOuCoroa') {
+                        animarMoeda();
+                    } else {
+                        animarDado();
+                    }
+                })
+                .catch(error => {
+                    alert('Erro ao verificar saldo!');
+                    loading.classList.remove('ativo');
+                    btnJogar.disabled = false;
+                    jogando = false;
+                });
+        }
+        
+        // ========== ANIMAÇÃO DA MOEDA ==========
+        function animarMoeda() {
+            moeda.classList.add('girando');
+            
+            setTimeout(() => {
+                moeda.classList.remove('girando');
+                moeda.classList.add('parando');
+                
+                // Cara (0deg) ou Coroa (180deg)
+                let resultado = Math.random() < 0.5 ? 0 : 180;
+                moeda.style.transform = 'rotateY(' + resultado + 'deg)';
+                
+                setTimeout(() => {
+                    moeda.classList.remove('parando');
+                    loading.classList.remove('ativo');
+                    
+                    // Envia o formulário
+                    document.getElementById('escolhaHidden').value = escolhaSelecionada;
+                    document.getElementById('valorHidden').value = document.getElementById('valorInput').value;
+                    document.getElementById('jogoForm').submit();
+                }, 500);
+            }, 1500);
+        }
+        
+        // ========== ANIMAÇÃO DO DADO ==========
+        function animarDado() {
+            dado.classList.add('girando');
+            
+            // Muda números rapidamente
+            let intervalo = setInterval(() => {
+                if (!dado.classList.contains('girando')) return;
+                
+                let num = Math.floor(Math.random() * 6) + 1;
+                if (num === 1) dado.style.transform = 'rotateX(0deg) rotateY(0deg)';
+                else if (num === 2) dado.style.transform = 'rotateY(180deg)';
+                else if (num === 3) dado.style.transform = 'rotateY(90deg)';
+                else if (num === 4) dado.style.transform = 'rotateY(-90deg)';
+                else if (num === 5) dado.style.transform = 'rotateX(90deg)';
+                else if (num === 6) dado.style.transform = 'rotateX(-90deg)';
+            }, 50);
+            
+            setTimeout(() => {
+                clearInterval(intervalo);
+                dado.classList.remove('girando');
+                
+                // Número final aleatório
+                let numFinal = Math.floor(Math.random() * 6) + 1;
+                
+                if (numFinal === 1) dado.style.transform = 'rotateX(0deg) rotateY(0deg)';
+                else if (numFinal === 2) dado.style.transform = 'rotateY(180deg)';
+                else if (numFinal === 3) dado.style.transform = 'rotateY(90deg)';
+                else if (numFinal === 4) dado.style.transform = 'rotateY(-90deg)';
+                else if (numFinal === 5) dado.style.transform = 'rotateX(90deg)';
+                else if (numFinal === 6) dado.style.transform = 'rotateX(-90deg)';
+                
+                setTimeout(() => {
+                    loading.classList.remove('ativo');
+                    
+                    // Envia o formulário
+                    document.getElementById('escolhaHidden').value = escolhaSelecionada;
+                    document.getElementById('valorHidden').value = document.getElementById('valorInput').value;
+                    document.getElementById('jogoForm').submit();
+                }, 500);
+            }, 1500);
+        }
+        
+        // ========== INICIALIZAÇÃO ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            // Se já tem resultado, desabilita o botão
+            if (document.querySelector('.resultado')) {
+                btnJogar.disabled = true;
+            }
+            
+            console.log('Tipo de jogo:', tipoJogo);
+        });
+    </script>
+</body>
+</html>

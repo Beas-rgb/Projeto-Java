@@ -1,84 +1,362 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<title>Roleta</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<style>
-    .roleta-container {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 20px;
-        padding: 30px;
-        margin-top: 30px;
-    }
-    .numero-sorteado {
-        font-size: 8rem;
-        font-weight: bold;
-        color: #ffd700;
-        text-shadow: 0 0 20px rgba(255,215,0,0.5);
-        background: rgba(0,0,0,0.3);
-        border-radius: 50%;
-        width: 200px;
-        height: 200px;
-        line-height: 200px;
-        margin: 20px auto;
-        animation: girar 2s ease-out;
-    }
-    @keyframes girar {
-        0% { transform: rotate(0deg); }
-        360% { transform: rotate(360deg); }
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roleta do Tigre</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #000000 0%, #FF6B35 50%, #000000 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .jogo-container {
+            background: #000000;
+            border-radius: 40px;
+            padding: 25px;
+            border: 4px solid #FF8C00;
+            box-shadow: 0 0 40px rgba(255,140,0,0.5), 0 10px 30px rgba(0,0,0,0.8);
+            max-width: 550px;
+            width: 100%;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .jogo-container::before {
+            content: "🐯🎯🐯";
+            position: absolute;
+            bottom: -20px;
+            left: -20px;
+            font-size: 5rem;
+            opacity: 0.05;
+            transform: rotate(-20deg);
+            pointer-events: none;
+        }
+
+        .titulo-jogo {
+            text-align: center;
+            color: #FF8C00;
+            font-size: 2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 2px 2px 0 white, 4px 4px 0 #000000;
+            margin-bottom: 15px;
+        }
+
+        .roleta-container {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            margin: 0 auto 20px;
+        }
+
+        .roleta-externa {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(#FF8C00 0deg 36deg, #000000 36deg 72deg, #FF8C00 72deg 108deg, #000000 108deg 144deg, #FF8C00 144deg 180deg, #000000 180deg 216deg, #FF8C00 216deg 252deg, #000000 252deg 288deg, #FF8C00 288deg 324deg, #000000 324deg 360deg);
+            border: 5px solid white;
+            animation: girarRoleta 10s linear infinite;
+            box-shadow: 0 0 30px #FF8C00;
+        }
+
+        @keyframes girarRoleta {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .roleta-interna {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            bottom: 15px;
+            background: #000000;
+            border-radius: 50%;
+            border: 3px solid #FF8C00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .numero-sorteado {
+            font-size: 4rem;
+            font-weight: 900;
+            color: #FF8C00;
+            text-shadow: 2px 2px 0 white, 4px 4px 0 #000000;
+            animation: brilhaNumero 2s infinite;
+        }
+
+        @keyframes brilhaNumero {
+            0%,100% { text-shadow: 2px 2px 0 white, 4px 4px 0 #000000; }
+            50% { text-shadow: 0 0 20px #FF8C00, 2px 2px 0 white, 4px 4px 0 #000000; }
+        }
+
+        .marcador {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid white;
+            filter: drop-shadow(0 0 10px #FF8C00);
+            z-index: 10;
+        }
+
+        .area-aposta {
+            background: #1a1a1a;
+            border-radius: 30px;
+            padding: 20px;
+            border: 2px solid #FF8C00;
+            margin: 15px 0;
+        }
+
+        .input-tigre {
+            background: #333;
+            border: 3px solid #FF8C00;
+            color: white;
+            padding: 12px;
+            border-radius: 40px;
+            width: 100%;
+            font-size: 1.2rem;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .input-tigre:focus {
+            background: #444;
+            border-color: white;
+            outline: none;
+            box-shadow: 0 0 20px #FF8C00;
+        }
+
+        .btn-tigre {
+            background: #FF8C00;
+            color: #000000;
+            font-weight: 900;
+            border: 3px solid white;
+            border-radius: 50px;
+            padding: 12px 20px;
+            width: 100%;
+            font-size: 1.3rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            margin: 5px 0;
+            cursor: pointer;
+        }
+
+        .btn-tigre:hover {
+            background: white;
+            color: #FF8C00;
+            transform: scale(1.02);
+            box-shadow: 0 0 30px #FF8C00;
+        }
+
+        .info-painel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .info-box {
+            background: #1a1a1a;
+            border: 2px solid #FF8C00;
+            border-radius: 20px;
+            padding: 12px;
+            text-align: center;
+            color: #FF8C00;
+        }
+
+        .info-box div {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .info-box span {
+            display: block;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: white;
+        }
+
+        .numeros-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        .numero-btn {
+            background: #333;
+            border: 2px solid #FF8C00;
+            border-radius: 15px;
+            padding: 10px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .numero-btn:hover {
+            background: #FF8C00;
+            color: #000000;
+            transform: scale(1.05);
+        }
+
+        .numero-btn.selecionado {
+            background: #FF8C00;
+            color: #000000;
+            border-color: white;
+            box-shadow: 0 0 20px #FF8C00;
+        }
+
+        .voltar {
+            background: transparent;
+            color: white;
+            border: 2px solid #FF8C00;
+            border-radius: 40px;
+            padding: 10px;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+
+        .voltar:hover {
+            background: #FF8C00;
+            color: #000000;
+        }
+    </style>
 </head>
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
 
-<body class="bg-dark text-light text-center">
-
-<div th:replace="fragments/navbar :: navbar"></div>
-
-<div class="container">
-    <div class="roleta-container">
-        <h1 class="mb-4">🎯 Roleta Numérica</h1>
-        
-        <div th:if="${erro}" class="alert alert-danger" role="alert">
-            <span th:text="${erro}"></span>
-        </div>
-        
-        <div th:if="${resultado}" class="alert alert-info" role="alert">
-            <span th:text="${resultado}"></span>
-        </div>
-        
-        <div class="numero-sorteado" id="numeroSorteado">
-            <span th:text="${resultado != null ? resultado.split(': ')[1] : '?'}">?</span>
-        </div>
-        
-        <form th:action="@{/roleta/jogar}" method="post">
-            <div class="row justify-content-center">
-                <div class="col-md-3">
-                    <input type="number" min="0" max="9" step="1" 
-                           name="numero" id="numero" 
-                           placeholder="Número (0-9)" 
-                           class="form-control form-control-lg text-center mb-3" required>
+    <div class="main-content">
+        <div class="jogo-container">
+            <div class="titulo-jogo">
+                🎯 ROLETA DO TIGRE 🎯
+            </div>
+            
+            <div class="roleta-container">
+                <div class="roleta-externa" id="roleta"></div>
+                <div class="roleta-interna">
+                    <div class="numero-sorteado" id="numeroDisplay">
+                        <span th:text="${resultado != null ? resultado.split(': ')[1] : '?'}">?</span>
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    <input type="number" step="0.01" min="0.01" 
-                           name="valor" id="valor" 
-                           placeholder="Valor da aposta (R$)" 
-                           class="form-control form-control-lg text-center mb-3" required>
+                <div class="marcador"></div>
+            </div>
+            
+            <div th:if="${erro}" class="alert alert-danger text-center p-2" style="font-size: 0.9rem;">[[${erro}]]</div>
+            <div th:if="${resultado}" class="alert text-center p-2" th:classappend="${#strings.contains(resultado, 'Ganhou') ? 'bg-warning' : 'alert-danger'}" style="font-size: 0.9rem; color: black;">[[${resultado}]]</div>
+            
+            <form th:action="@{/roleta/jogar}" method="post" id="jogoForm">
+                <input type="hidden" name="numero" id="numeroHidden">
+                <input type="hidden" name="valor" id="valorHidden">
+                
+                <div class="area-aposta">
+                    <div style="color: #FF8C00; text-align: center; margin-bottom: 10px;">
+                        🐯 ESCOLHA UM NÚMERO:
+                    </div>
+                    
+                    <div class="numeros-grid">
+                        <div th:each="i : ${#numbers.sequence(0,9)}" 
+                             class="numero-btn" 
+                             th:onclick="selecionarNumero(this, [[${i}]])"
+                             th:text="${i}">0</div>
+                    </div>
+                    
+                    <input type="number" step="0.01" id="valorInput" class="input-tigre mt-3" 
+                           placeholder="💰 VALOR DA APOSTA">
+                    
+                    <button type="button" onclick="jogar()" class="btn btn-tigre mt-3">
+                        🎯 GIRAR ROLETA
+                    </button>
+                </div>
+            </form>
+            
+            <div class="info-painel">
+                <div class="info-box">
+                    <div>🏆 PRÊMIO</div>
+                    <span>5x</span>
+                </div>
+                <div class="info-box">
+                    <div>📊 CHANCE</div>
+                    <span>10%</span>
                 </div>
             </div>
             
-            <button type="submit" class="btn btn-success btn-lg px-5">
-                🎯 Girar Roleta
-            </button>
-        </form>
-        
-        <div class="mt-4 text-warning">
-            <p>💰 Acertar o número paga 5x o valor apostado!</p>
+            <a href="/" class="voltar">🏠 VOLTAR</a>
         </div>
     </div>
-</div>
 
-<div th:replace="fragments/footer :: footer"></div>
+    <div th:replace="fragments/footer :: footer"></div>
 
+    <script>
+        let numeroSelecionado = null;
+        let roleta = document.getElementById('roleta');
+        
+        function selecionarNumero(elemento, numero) {
+            document.querySelectorAll('.numero-btn').forEach(btn => {
+                btn.classList.remove('selecionado');
+            });
+            elemento.classList.add('selecionado');
+            numeroSelecionado = numero;
+        }
+        
+        function jogar() {
+            let valor = document.getElementById('valorInput').value;
+            
+            if (!valor || valor <= 0) {
+                alert("🐯 Digite um valor válido!");
+                return;
+            }
+            
+            if (numeroSelecionado === null) {
+                alert("🐯 Escolha um número de 0 a 9!");
+                return;
+            }
+            
+            // Animar roleta
+            roleta.style.animation = 'girarRoleta 0.3s linear infinite';
+            
+            setTimeout(() => {
+                roleta.style.animation = 'girarRoleta 10s linear infinite';
+                
+                document.getElementById('numeroHidden').value = numeroSelecionado;
+                document.getElementById('valorHidden').value = valor;
+                document.getElementById('jogoForm').submit();
+            }, 1500);
+        }
+    </script>
 </body>
 </html>
